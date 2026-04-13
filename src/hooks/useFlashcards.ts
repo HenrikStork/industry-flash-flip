@@ -67,6 +67,11 @@ export function useFlashcards() {
     setCurrentIndex((i) => i + 1);
   }, [currentCard, stats]);
 
+  const skip = useCallback(() => {
+    if (!currentCard) return;
+    setCurrentIndex((i) => i + 1);
+  }, [currentCard]);
+
   const resetToday = useCallback(() => {
     const fresh: DailyStats = { date: getTodayKey(), learned: [], review: [] };
     setStats(fresh);
@@ -82,6 +87,7 @@ export function useFlashcards() {
     remaining: deck.length - currentIndex,
     markLearned,
     markReview,
+    skip,
     resetToday,
   };
 }
