@@ -1,9 +1,4 @@
-export interface Term {
-  id: number;
-  term: string;
-  definition: string;
-  category: string;
-}
+import type { Term, Category } from "@/types";
 
 export const terms: Term[] = [
   { id: 1, term: "Digital Twin", definition: "Ein virtuelles Abbild eines physischen Objekts, Prozesses oder Systems, das in Echtzeit synchronisiert wird und zur Simulation, Analyse und Optimierung dient.", category: "Digitalisierung" },
@@ -31,7 +26,6 @@ export const terms: Term[] = [
   { id: 23, term: "SPS (Speicherprogrammierbare Steuerung)", definition: "Ein industrieller Computer zur Automatisierung von Fertigungsprozessen, der Ein-/Ausgänge überwacht und Steuerungslogik ausführt.", category: "Produktion" },
   { id: 24, term: "ERP-System", definition: "Enterprise Resource Planning – eine Software zur Planung und Steuerung aller Unternehmensressourcen wie Material, Personal, Finanzen und Produktion.", category: "IT-Infrastruktur" },
   { id: 25, term: "Dateninteroperabilität", definition: "Die Fähigkeit, Daten zwischen verschiedenen Systemen und Formaten so auszutauschen, dass sie korrekt interpretiert und weiterverarbeitet werden können.", category: "Datenräume" },
-  // Neue Begriffe
   { id: 26, term: "Industrie 4.0", definition: "Die vierte industrielle Revolution – die umfassende Digitalisierung und Vernetzung der industriellen Produktion durch IoT, KI und Cloud-Technologien.", category: "Digitalisierung" },
   { id: 27, term: "Blockchain in der Lieferkette", definition: "Einsatz von Blockchain-Technologie zur transparenten, manipulationssicheren Nachverfolgung von Waren und Transaktionen entlang der Supply Chain.", category: "Digitalisierung" },
   { id: 28, term: "Augmented Reality (AR) in der Fertigung", definition: "Überlagerung der realen Umgebung mit digitalen Informationen zur Unterstützung bei Montage, Wartung und Qualitätskontrolle.", category: "Digitalisierung" },
@@ -58,3 +52,15 @@ export const terms: Term[] = [
   { id: 49, term: "Microservices", definition: "Ein Architekturmuster, bei dem Anwendungen als Sammlung kleiner, unabhängig deploybare Services aufgebaut werden.", category: "IT-Infrastruktur" },
   { id: 50, term: "Simulation-Based Engineering", definition: "Der Einsatz von Simulationsmodellen in der Produktentwicklung und Prozessplanung, um physische Prototypen zu reduzieren und Designs virtuell zu validieren.", category: "Digitalisierung" },
 ];
+
+/** Derive unique categories from the terms data. */
+export const categories: Category[] = [
+  ...new Set(terms.map((t) => t.category)),
+].map((label) => ({ slug: label.toLowerCase().replace(/[^a-z0-9]+/g, "-"), label }));
+
+/** Helper: get terms filtered by category slug. */
+export function getTermsByCategory(slug: string): Term[] {
+  const cat = categories.find((c) => c.slug === slug);
+  if (!cat) return [];
+  return terms.filter((t) => t.category === cat.label);
+}

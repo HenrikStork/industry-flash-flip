@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import type { Term } from "@/data/terms";
+import type { Term } from "@/types";
 import { RotateCcw } from "lucide-react";
 
 interface FlashCardProps {
