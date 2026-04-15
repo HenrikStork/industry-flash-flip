@@ -1,71 +1,45 @@
 import { useState, useEffect, useCallback } from "react";
-import { terms, type Term } from "@/data/terms";
-
-interface DailyStats {
-  date: string;
-  learned: number[];
-  review: number[];
-}
-
-const STORAGE_KEY = "mx-flashcards";
-
-function getTodayKey() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function loadStats(): DailyStats {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as DailyStats;
-      if (parsed.date === getTodayKey()) return parsed;
-    }
-  } catch {}
-  return { date: getTodayKey(), learned: [], review: [] };
-}
-
-function saveStats(stats: DailyStats) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
-}
+import { terms } from "@/data/terms";
+import type { Term, DailyStats } from "@/types";
+import { loadDailyStats, saveDailyStats } from "@/lib/storage";
 
 export function useFlashcards() {
-  const [stats, setStats] = useState<DailyStats>(loadStats);
+  const [stats, setStats] = useState<DailyStats>(loadDailyStats);
   const [deck, setDeck] = useState<Term[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Build deck: terms not yet learned today
   useEffect(() => {
     const remaining = terms.filter((t) => !stats.learned.includes(t.id));
-    // Shuffle
     const shuffled = [...remaining].sort(() => Math.random() - 0.5);
     setDeck(shuffled);
     setCurrentIndex(0);
-  }, [stats.learned.length]); // rebuild when learned changes
+  }, [stats.learned.length]);
 
   const currentCard = deck[currentIndex] ?? null;
   const isFinished = deck.length === 0;
 
+  const updateStats = useCallback((next: DailyStats) => {
+    setStats(next);
+    saveDailyStats(next);
+  }, []);
+
   const markLearned = useCallback(() => {
     if (!currentCard) return;
-    const next: DailyStats = {
+    updateStats({
       ...stats,
       learned: [...stats.learned, currentCard.id],
       review: stats.review.filter((id) => id !== currentCard.id),
-    };
-    setStats(next);
-    saveStats(next);
-  }, [currentCard, stats]);
+    });
+  }, [currentCard, stats, updateStats]);
 
   const markReview = useCallback(() => {
     if (!currentCard) return;
     if (!stats.review.includes(currentCard.id)) {
-      const next = { ...stats, review: [...stats.review, currentCard.id] };
-      setStats(next);
-      saveStats(next);
+      updateStats({ ...stats, review: [...stats.review, currentCard.id] });
     }
-    // Move to next card
     setCurrentIndex((i) => i + 1);
-  }, [currentCard, stats]);
+  }, [currentCard, stats, updateStats]);
 
   const skip = useCallback(() => {
     if (!currentCard) return;
@@ -73,10 +47,8 @@ export function useFlashcards() {
   }, [currentCard]);
 
   const resetToday = useCallback(() => {
-    const fresh: DailyStats = { date: getTodayKey(), learned: [], review: [] };
-    setStats(fresh);
-    saveStats(fresh);
-  }, []);
+    updateStats({ date: new Date().toISOString().slice(0, 10), learned: [], review: [] });
+  }, [updateStats]);
 
   return {
     currentCard,
