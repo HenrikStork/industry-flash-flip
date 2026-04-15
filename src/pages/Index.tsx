@@ -9,7 +9,7 @@ import { OverviewList } from "@/components/OverviewList";
 import { useFlashcards } from "@/hooks/useFlashcards";
 import { Layers, BarChart3, RefreshCcw, Zap, List, SkipForward } from "lucide-react";
 
-const Index = () => {
+const Index = () => { // force HMR reset
   const {
     currentCard,
     isFinished,
